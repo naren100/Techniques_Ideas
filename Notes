@@ -1,0 +1,53 @@
+Notes Created Using ChatGPT 5.0
+1. App Creation
+from fastapi import FastAPI
+app = FastAPI()
+FastAPI() creates the application instance.
+app is what you’ll run with Uvicorn (or another ASGI server).
+This instance will hold all the routes and configuration.
+
+2. Route: /users/me
+@app.get("/users/me")
+async def read_user_me():
+    return {"user_id": "the current user"}
+This defines a GET endpoint at /users/me.
+When someone goes to http://127.0.0.1:8000/users/me in a browser or with curl, they’ll get back JSON:
+{
+  "user_id": "the current user"
+}
+async def means the function is asynchronous, which is good for handling many concurrent requests.
+
+
+3. Route: /users/{user_id}
+@app.get("/users/{user_id}")
+async def read_user(user_id: str):
+    return {"user_id": user_id}
+This defines a GET endpoint with a path parameter.
+{user_id} is a placeholder. Whatever the client puts in the URL will be passed into the function.
+Example:
+Request: http://127.0.0.1:8000/users/123
+Response:
+{
+  "user_id": "123"
+}
+The function parameter user_id: str tells FastAPI to parse it as a string.
+
+4. FastAPI checks the routes top to bottom in the order you declare them.
+/users/me → is a fixed/static path
+/users/{user_id} → is a dynamic path (it matches anything that comes after /users/)
+If you declare /users/{user_id} first,
+ then a request to /users/me will also match that dynamic route —
+ because FastAPI sees "me" as just another user_id string.
+
+ 5. How does Fast API handle the Data Validation?
+It is because of Pydantic.
+FastAPI uses Pydantic models to validate incoming request data and to shape outgoing responses.
+By default, Pydantic is helpful and flexible —
+it tries to coerce values into the right type instead of rejecting them.
+If you make validation pedantic (strict), you tell FastAPI:
+“Don’t be flexible. Reject anything that doesn’t exactly match the schema.”
+Code Example:
+from pydantic import BaseModel, StrictInt
+class User(BaseModel):
+    id: StrictInt   # <-- pedantic: must be a real int
+    name: str
